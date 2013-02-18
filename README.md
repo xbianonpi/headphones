@@ -1,4 +1,4 @@
-#![preview thumb](https://github.com/rembo10/headphones/raw/master/data/images/headphoneslogo.png)Headphones
+#![preview thumb](https://github.com/xbianonpi/headphones/raw/master/data/images/headphoneslogo.png)Headphones
 
 ###Installation and Notes
 
