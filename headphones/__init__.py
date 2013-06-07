@@ -157,6 +157,10 @@ NZBSRUS_APIKEY = None
 
 NZBX = False
 
+PREFERRED_WORDS = None
+IGNORED_WORDS = None
+REQUIRED_WORDS = None
+
 LASTFM_USERNAME = None
 
 LOSSY_MEDIA_FORMATS = ["mp3", "aac", "ogg", "ape", "m4a"]
@@ -226,6 +230,8 @@ HPPASS = None
 
 CACHE_SIZEMB = 32
 
+UMASK = None
+
 def CheckSection(sec):
     """ Check if INI section exists, if not create it """
     try:
@@ -286,12 +292,14 @@ def initialize():
                 LIBRARYSCAN, LIBRARYSCAN_INTERVAL, DOWNLOAD_SCAN_INTERVAL, SAB_HOST, SAB_USERNAME, SAB_PASSWORD, SAB_APIKEY, SAB_CATEGORY, \
                 NZBGET_USERNAME, NZBGET_PASSWORD, NZBGET_CATEGORY, NZBGET_HOST, NZBMATRIX, NZBMATRIX_USERNAME, NZBMATRIX_APIKEY, NEWZNAB, NEWZNAB_HOST, NEWZNAB_APIKEY, NEWZNAB_ENABLED, EXTRA_NEWZNABS, \
                 NZBSORG, NZBSORG_UID, NZBSORG_HASH, NEWZBIN, NEWZBIN_UID, NEWZBIN_PASSWORD, NZBSRUS, NZBSRUS_UID, NZBSRUS_APIKEY, NZBX, \
+                PREFERRED_WORDS, REQUIRED_WORDS, IGNORED_WORDS, \
                 LASTFM_USERNAME, INTERFACE, FOLDER_PERMISSIONS, ENCODERFOLDER, ENCODER_PATH, ENCODER, XLDPROFILE, BITRATE, SAMPLINGFREQUENCY, \
                 MUSIC_ENCODER, ADVANCEDENCODER, ENCODEROUTPUTFORMAT, ENCODERQUALITY, ENCODERVBRCBR, ENCODERLOSSLESS, DELETE_LOSSLESS_FILES, \
                 PROWL_ENABLED, PROWL_PRIORITY, PROWL_KEYS, PROWL_ONSNATCH, PUSHOVER_ENABLED, PUSHOVER_PRIORITY, PUSHOVER_KEYS, PUSHOVER_ONSNATCH, MIRRORLIST, \
                 MIRROR, CUSTOMHOST, CUSTOMPORT, CUSTOMSLEEP, HPUSER, HPPASS, XBMC_ENABLED, XBMC_HOST, XBMC_USERNAME, XBMC_PASSWORD, XBMC_UPDATE, \
                 XBMC_NOTIFY, NMA_ENABLED, NMA_APIKEY, NMA_PRIORITY, NMA_ONSNATCH, SYNOINDEX_ENABLED, ALBUM_COMPLETION_PCT, PREFERRED_BITRATE_HIGH_BUFFER, \
-                PREFERRED_BITRATE_LOW_BUFFER, PREFERRED_BITRATE_ALLOW_LOSSLESS, CACHE_SIZEMB
+                PREFERRED_BITRATE_LOW_BUFFER, PREFERRED_BITRATE_ALLOW_LOSSLESS, CACHE_SIZEMB, \
+                UMASK
 
         if __INITIALIZED__:
             return False
@@ -436,6 +444,10 @@ def initialize():
         NZBSRUS_APIKEY = check_setting_str(CFG, 'NZBsRus', 'nzbsrus_apikey', '')
         
         NZBX = bool(check_setting_int(CFG, 'nzbX', 'nzbx', 0))
+        
+        PREFERRED_WORDS = check_setting_str(CFG, 'General', 'preferred_words', '')
+        IGNORED_WORDS = check_setting_str(CFG, 'General', 'ignored_words', '')
+        REQUIRED_WORDS = check_setting_str(CFG, 'General', 'required_words', '')
 
         LASTFM_USERNAME = check_setting_str(CFG, 'General', 'lastfm_username', '')
 
@@ -585,6 +597,10 @@ def initialize():
                 LATEST_VERSION = CURRENT_VERSION
         else:
             LATEST_VERSION = CURRENT_VERSION
+
+        # Store the original umask
+        UMASK = os.umask(0)
+        os.umask(UMASK)
 
         __INITIALIZED__ = True
         return True
@@ -779,6 +795,10 @@ def config_write():
     
     new_config['nzbX'] = {}
     new_config['nzbX']['nzbx'] = int(NZBX)
+    
+    new_config['General']['preferred_words'] = PREFERRED_WORDS
+    new_config['General']['ignored_words'] = IGNORED_WORDS
+    new_config['General']['required_words'] = REQUIRED_WORDS
 
     new_config['Prowl'] = {}
     new_config['Prowl']['prowl_enabled'] = int(PROWL_ENABLED)
