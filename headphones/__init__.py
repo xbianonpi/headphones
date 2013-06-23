@@ -413,9 +413,9 @@ def initialize():
         SAB_APIKEY = check_setting_str(CFG, 'SABnzbd', 'sab_apikey', '')
         SAB_CATEGORY = check_setting_str(CFG, 'SABnzbd', 'sab_category', '')
 
-        NZBGET_USERNAME = check_setting_str(CFG, 'NZBget', 'nzbget_username', 'xbian')
-        NZBGET_PASSWORD = check_setting_str(CFG, 'NZBget', 'nzbget_password', 'raspberry')
-        NZBGET_CATEGORY = check_setting_str(CFG, 'NZBget', 'nzbget_category', 'music')
+        NZBGET_USERNAME = check_setting_str(CFG, 'NZBget', 'nzbget_username', '')
+        NZBGET_PASSWORD = check_setting_str(CFG, 'NZBget', 'nzbget_password', '')
+        NZBGET_CATEGORY = check_setting_str(CFG, 'NZBget', 'nzbget_category', '')
         NZBGET_HOST = check_setting_str(CFG, 'NZBget', 'nzbget_host', '')
 		
         NZBMATRIX = bool(check_setting_int(CFG, 'NZBMatrix', 'nzbmatrix', 0))
