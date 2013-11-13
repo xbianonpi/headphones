@@ -565,6 +565,9 @@ class WebInterface(object):
                     "http_port" : headphones.HTTP_PORT,
                     "http_pass" : headphones.HTTP_PASSWORD,
                     "launch_browser" : checked(headphones.LAUNCH_BROWSER),
+                    "enable_https" : checked(headphones.ENABLE_HTTPS),
+                    "https_cert" : headphones.HTTPS_CERT,
+                    "https_key" : headphones.HTTPS_KEY,
                     "api_enabled" : checked(headphones.API_ENABLED),
                     "api_key" : headphones.API_KEY,
                     "download_scan_interval" : headphones.DOWNLOAD_SCAN_INTERVAL,
@@ -579,9 +582,18 @@ class WebInterface(object):
                     "nzbget_user" : headphones.NZBGET_USERNAME,
                     "nzbget_pass" : headphones.NZBGET_PASSWORD,
                     "nzbget_cat" : headphones.NZBGET_CATEGORY,
+                    "transmission_host" : headphones.TRANSMISSION_HOST,
+                    "transmission_user" : headphones.TRANSMISSION_USERNAME,
+                    "transmission_pass" : headphones.TRANSMISSION_PASSWORD,
+                    "utorrent_host" : headphones.UTORRENT_HOST,
+                    "utorrent_user" : headphones.UTORRENT_USERNAME,
+                    "utorrent_pass" : headphones.UTORRENT_PASSWORD,
                     "nzb_downloader_sabnzbd" : radio(headphones.NZB_DOWNLOADER, 0),
                     "nzb_downloader_nzbget" : radio(headphones.NZB_DOWNLOADER, 1),
                     "nzb_downloader_blackhole" : radio(headphones.NZB_DOWNLOADER, 2),
+                    "torrent_downloader_blackhole" : radio(headphones.TORRENT_DOWNLOADER, 0),
+                    "torrent_downloader_transmission" : radio(headphones.TORRENT_DOWNLOADER, 1),
+                    "torrent_downloader_utorrent" : radio(headphones.TORRENT_DOWNLOADER, 2),
                     "download_dir" : headphones.DOWNLOAD_DIR,
                     "use_blackhole" : checked(headphones.BLACKHOLE),
                     "blackhole_dir" : headphones.BLACKHOLE_DIR,
@@ -606,6 +618,8 @@ class WebInterface(object):
                     "numberofseeders" : headphones.NUMBEROFSEEDERS,
                     "use_isohunt" : checked(headphones.ISOHUNT),
                     "use_kat" : checked(headphones.KAT),
+                    "use_piratebay" : checked(headphones.PIRATEBAY),
+                    "piratebay_proxy_url" : headphones.PIRATEBAY_PROXY_URL,
                     "use_mininova" : checked(headphones.MININOVA),
                     "use_waffles" : checked(headphones.WAFFLES),
                     "waffles_uid" : headphones.WAFFLES_UID,
@@ -637,6 +651,7 @@ class WebInterface(object):
                     "lossless_dest_dir" : headphones.LOSSLESS_DESTINATION_DIR,
                     "folder_format" : headphones.FOLDER_FORMAT,
                     "file_format" : headphones.FILE_FORMAT,
+                    "file_underscores" : checked(headphones.FILE_UNDERSCORES),
                     "include_extras" : checked(headphones.INCLUDE_EXTRAS),
                     "autowant_upcoming" : checked(headphones.AUTOWANT_UPCOMING),
                     "autowant_all" : checked(headphones.AUTOWANT_ALL),
@@ -682,7 +697,9 @@ class WebInterface(object):
                     "customsleep": headphones.CUSTOMSLEEP,
                     "hpuser": headphones.HPUSER,
                     "hppass": headphones.HPPASS,
-                    "cache_sizemb":headphones.CACHE_SIZEMB,
+                    "cache_sizemb": headphones.CACHE_SIZEMB,
+                    "file_permissions": headphones.FILE_PERMISSIONS,
+                    "folder_permissions": headphones.FOLDER_PERMISSIONS
                 }
 
         # Need to convert EXTRAS to a dictionary we can pass to the config: it'll come in as a string like 2,5,6,8
@@ -702,28 +719,31 @@ class WebInterface(object):
         return serve_template(templatename="config.html", title="Settings", config=config)
     config.exposed = True
 
-
     def configUpdate(self, http_host='0.0.0.0', http_username=None, http_port=8181, http_password=None, launch_browser=0, api_enabled=0, api_key=None,
         download_scan_interval=None, nzb_search_interval=None, libraryscan_interval=None, sab_host=None, sab_username=None, sab_apikey=None, sab_password=None,
-        sab_category=None, nzbget_host=None, nzbget_username='xbian', nzbget_password=None, nzbget_category=None, nzb_downloader=0, download_dir=None, blackhole=0, blackhole_dir=None, usenet_retention=None, 
-        use_headphones_indexer=0,newznab=0, newznab_host=None, newznab_apikey=None,
-        newznab_enabled=0, nzbsorg=0, nzbsorg_uid=None, nzbsorg_hash=None, nzbsrus=0, nzbsrus_uid=None, nzbsrus_apikey=None, preferred_words=None, required_words=None, ignored_words=None,
-        preferred_quality=0, preferred_bitrate=None, detect_bitrate=0, move_files=0, torrentblackhole_dir=None, download_torrent_dir=None,
-        numberofseeders=10, use_isohunt=0, use_kat=0, use_mininova=0, waffles=0, waffles_uid=None, waffles_passkey=None, whatcd=0, whatcd_username=None, whatcd_password=None,
+        sab_category=None, nzbget_host=None, nzbget_username='xbian', nzbget_password=None, nzbget_category=None, transmission_host=None, transmission_username=None, transmission_password=None, 
+        utorrent_host=None, utorrent_username=None, utorrent_password=None, nzb_downloader=0, torrent_downloader=0, download_dir=None, blackhole_dir=None, usenet_retention=None, 
+        use_headphones_indexer=0, newznab=0, newznab_host=None, newznab_apikey=None, newznab_enabled=0, nzbsorg=0, nzbsorg_uid=None, nzbsorg_hash=None, nzbsrus=0, nzbsrus_uid=None, nzbsrus_apikey=None, 
+        preferred_words=None, required_words=None, ignored_words=None, preferred_quality=0, preferred_bitrate=None, detect_bitrate=0, move_files=0, torrentblackhole_dir=None, download_torrent_dir=None,
+        numberofseeders=None, use_piratebay=0, piratebay_proxy_url=None, use_isohunt=0, use_kat=0, use_mininova=0, waffles=0, waffles_uid=None, waffles_passkey=None, whatcd=0, whatcd_username=None, whatcd_password=None,
         rutracker=0, rutracker_user=None, rutracker_password=None, rename_files=0, correct_metadata=0, cleanup_files=0, add_album_art=0, album_art_format=None, embed_album_art=0, embed_lyrics=0,
-        destination_dir=None, lossless_destination_dir=None, folder_format=None, file_format=None, include_extras=0, single=0, ep=0, compilation=0, soundtrack=0, live=0,
+        destination_dir=None, lossless_destination_dir=None, folder_format=None, file_format=None, file_underscores=0, include_extras=0, single=0, ep=0, compilation=0, soundtrack=0, live=0,
         remix=0, spokenword=0, audiobook=0, autowant_upcoming=False, autowant_all=False, keep_torrent_files=False, interface=None, log_dir=None, cache_dir=None, music_encoder=0, encoder=None, xldprofile=None,
         bitrate=None, samplingfrequency=None, encoderfolder=None, advancedencoder=None, encoderoutputformat=None, encodervbrcbr=None, encoderquality=None, encoderlossless=0,
         delete_lossless_files=0, prowl_enabled=0, prowl_onsnatch=0, prowl_keys=None, prowl_priority=0, xbmc_enabled=0, xbmc_host=None, xbmc_username=None, xbmc_password=None,
         xbmc_update=0, xbmc_notify=0, nma_enabled=False, nma_apikey=None, nma_priority=0, nma_onsnatch=0, synoindex_enabled=False,
         pushover_enabled=0, pushover_onsnatch=0, pushover_keys=None, pushover_priority=0, mirror=None, customhost=None, customport=None,
-        customsleep=None, hpuser=None, hppass=None, preferred_bitrate_high_buffer=None, preferred_bitrate_low_buffer=None, preferred_bitrate_allow_lossless=0, cache_sizemb=None, **kwargs):
+        customsleep=None, hpuser=None, hppass=None, preferred_bitrate_high_buffer=None, preferred_bitrate_low_buffer=None, preferred_bitrate_allow_lossless=0, cache_sizemb=None, 
+        enable_https=0, https_cert=None, https_key=None, file_permissions=None, folder_permissions=None, **kwargs):
 
         headphones.HTTP_HOST = http_host
         headphones.HTTP_PORT = http_port
         headphones.HTTP_USERNAME = http_username
         headphones.HTTP_PASSWORD = http_password
         headphones.LAUNCH_BROWSER = launch_browser
+        headphones.ENABLE_HTTPS = enable_https
+        headphones.HTTPS_CERT = https_cert
+        headphones.HTTPS_KEY = https_key
         headphones.API_ENABLED = api_enabled
         headphones.API_KEY = api_key
         headphones.DOWNLOAD_SCAN_INTERVAL = download_scan_interval
@@ -738,9 +758,15 @@ class WebInterface(object):
         headphones.NZBGET_USERNAME = nzbget_username
         headphones.NZBGET_PASSWORD = nzbget_password
         headphones.NZBGET_CATEGORY = nzbget_category
+        headphones.TRANSMISSION_HOST = transmission_host
+        headphones.TRANSMISSION_USERNAME = transmission_username
+        headphones.TRANSMISSION_PASSWORD = transmission_password
+        headphones.UTORRENT_HOST = utorrent_host
+        headphones.UTORRENT_USERNAME = utorrent_username
+        headphones.UTORRENT_PASSWORD = utorrent_password
         headphones.NZB_DOWNLOADER = int(nzb_downloader)
+        headphones.TORRENT_DOWNLOADER = int(torrent_downloader)
         headphones.DOWNLOAD_DIR = download_dir
-        headphones.BLACKHOLE = blackhole
         headphones.BLACKHOLE_DIR = blackhole_dir
         headphones.USENET_RETENTION = usenet_retention
         headphones.HEADPHONES_INDEXER = use_headphones_indexer
@@ -762,6 +788,8 @@ class WebInterface(object):
         headphones.DOWNLOAD_TORRENT_DIR = download_torrent_dir
         headphones.ISOHUNT = use_isohunt
         headphones.KAT = use_kat
+        headphones.PIRATEBAY = use_piratebay
+        headphones.PIRATEBAY_PROXY_URL = piratebay_proxy_url
         headphones.MININOVA = use_mininova
         headphones.WAFFLES = waffles
         headphones.WAFFLES_UID = waffles_uid
@@ -790,6 +818,7 @@ class WebInterface(object):
         headphones.LOSSLESS_DESTINATION_DIR = lossless_destination_dir
         headphones.FOLDER_FORMAT = folder_format
         headphones.FILE_FORMAT = file_format
+        headphones.FILE_UNDERSCORES = file_underscores
         headphones.INCLUDE_EXTRAS = include_extras
         headphones.AUTOWANT_UPCOMING = autowant_upcoming
         headphones.AUTOWANT_ALL = autowant_all
@@ -835,6 +864,8 @@ class WebInterface(object):
         headphones.HPUSER = hpuser
         headphones.HPPASS = hppass
         headphones.CACHE_SIZEMB = int(cache_sizemb)
+        headphones.FILE_PERMISSIONS = file_permissions
+        headphones.FOLDER_PERMISSIONS = folder_permissions
 
         # Handle the variable config options. Note - keys with False values aren't getting passed
 
