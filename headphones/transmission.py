@@ -20,6 +20,7 @@ import urllib2
 import lib.simplejson as json
 import base64
 import time
+import re
 
 # This is just a simple script to send torrents to transmission. The
 # intention is to turn this into a class where we can check the state
@@ -83,8 +84,25 @@ def torrentAction(method, arguments):
 
     if host.endswith('/'):
         host = host[:-1]
-	
-    host = host + "/transmission/rpc"
+
+    # Either the host ends with a port, or some directory, or rpc
+    # If it ends with /rpc we don't have to do anything
+    # If it ends with a port we add /transmission/rpc
+    # anything else we just add rpc
+    if not host.endswith('/rpc'):
+        # Check if it ends in a port number
+        i = host.rfind(':')
+        if i >= 0:
+            possible_port = host[i+1:]
+            try:
+                port = int(possible_port)
+                host = host + "/transmission/rpc"
+            except ValueError:
+                host = host + "/rpc"
+        else:
+            logger.error('Transmission port missing')
+            return
+
     request = urllib2.Request(host)
     if username and password:
         base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
